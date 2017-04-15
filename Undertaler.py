@@ -24,13 +24,15 @@ green = pygame.Color(0,219,42)
 
 select_button = 1
 select_act = 1
-nb_act = 1
+max_nb_act = 1
 
 act_button_fight = False
 act_button_act = False
 act_button_item = False
 act_button_mercy = False
 act_all_button = False
+fight_gaster = False
+fight_chara = False
 
 police = pygame.font.Font("Data/Mars_Needs_Cunnilingus.ttf",40)
 police2 = pygame.font.Font("Data/DTM-Mono.otf",40)
@@ -38,10 +40,12 @@ police2 = pygame.font.Font("Data/DTM-Mono.otf",40)
 affiche1 = police.render("Chara   LV 99999",1,black)
 
 #                                         Pictures
-cadre_img = pygame.transform.scale(pygame.image.load("Data/cadre.png"),(800,300))
+cadre_img = pygame.transform.scale(pygame.image.load("Data/cadre.png"),(820,250))
 cadre_fight = pygame.transform.scale(pygame.image.load("Data/cadre.png"),(850,200))
+cadre_bord = pygame.transform.scale(pygame.image.load("Data/cadre_bord.png"),(820,250))
 background = pygame.image.load("Data/background.png")
 fight_barre = pygame.image.load("Data/fight_joge.png")
+fight_bar_img = pygame.image.load("Data/fight_bar.png")
 
 heart = pygame.transform.scale(pygame.image.load("Data/heart.png"),(30,30))
 
@@ -70,6 +74,10 @@ gaster_sprite = [
 	pygame.transform.scale(pygame.image.load("Data/gaster_sprite2_haut_7.png"),(300,192)),
 	pygame.transform.scale(pygame.image.load("Data/gaster_sprite2_bas_8.png"),(300,139)),
 	pygame.transform.scale(pygame.image.load("Data/gaster_sprite2_haut_8.png"),(300,192)),
+]
+
+hit_sprites = [
+	
 ]
 
 
@@ -140,10 +148,11 @@ class Cadre(pygame.sprite.Sprite):
 	
 	def __init__(self):
 		
-		self.x = 100
-		self.y = 310
+		self.x = 90
+		self.y = 350
 		
 		self.image = cadre_img
+		self.bord = cadre_bord
 		
 		pygame.sprite.Sprite.__init__(self)
 	
@@ -151,7 +160,7 @@ class Cadre(pygame.sprite.Sprite):
 		
 		
 		self.rect = (self.x,self.y,self.image.get_width(),self.image.get_height())
-		self.mask = pygame.mask.from_surface(self.image)
+		self.mask = pygame.mask.from_surface(self.bord)
 
 
 
@@ -242,11 +251,11 @@ class Gaster:
 		self.image = gaster_sprite[8]
 		self.image2 = gaster_sprite[9]
 		
-		self.name = "Gaster"
+		self.name = "* Gaster"
 		self.hp = 800
 		self.mhp = 1000
 		
-		self.affiche = police2.render(self.name+" HP:"+"        "+str(self.hp)+"/"+str(self.mhp),1,white)
+		self.affiche = police2.render(self.name+"         "+str(self.hp)+"/"+str(self.mhp),1,white)
 		
 		self.update()
 	
@@ -275,15 +284,15 @@ class Gaster:
 			self.cpt1 = 0
 		
 		self.rect = (self.x,self.y,self.image.get_width(),self.image.get_height())
-		self.affiche = police2.render(self.name+" HP:"+"        "+str(self.hp)+"/"+str(self.mhp),1,white)
+		self.affiche = police2.render(self.name+"         "+str(self.hp)+"/"+str(self.mhp),1,white)
 	
 	
 		
 	
 	def blit(self):
 		
-		window.blit(self.image,(self.x+20,self.y+170))
-		window.blit(self.image2,(self.x+20,self.y-5))
+		window.blit(self.image,(self.x+20,self.y+210))
+		window.blit(self.image2,(self.x+20,self.y+20))
 
 
 class Chara(pygame.sprite.Sprite):
@@ -343,15 +352,37 @@ class Chara_heart_menu:
 		
 		elif act_all_button:
 			if select_act == 1:
-				self.x = 140
-				self.y = 350
+				self.x = 130
+				self.y = 380
 			if select_act == 2:
-				self.x = 140
-				self.y = 450
+				self.x = 130
+				self.y = 480
 			
 		
 		self.rect = (self.x,self.y,self.image.get_width(),self.image.get_height())
 	
+
+class Fight_bar(pygame.sprite.Sprite):
+	
+	def __init__(self):
+		
+		self.x,self.y = 150,380
+		self.vx = 7
+		self.retour = 0
+		
+		self.image = fight_bar_img
+		
+		pygame.sprite.Sprite.__init__(self)
+	
+	def update(self):
+		
+		self.x += self.vx
+		
+		self.rect = (self.x,self.y,self.image.get_width(),self.image.get_height())
+		self.mask = pygame.mask.from_surface(self.image)
+		
+		
+		
 
 
 
@@ -364,6 +395,7 @@ button_mercy = Button_mercy()
 gaster = Gaster()
 chara = Chara()
 chara_heart_menu = Chara_heart_menu()
+fight_bar = Fight_bar()
 
 
 class Fight_choice:
@@ -371,20 +403,35 @@ class Fight_choice:
 	def __init__(self):
 		
 		self.x = 180
-		self.y = 340
+		self.y = 370
 		self.affiche_choice1 = gaster.affiche
 		self.choice = ""
 		
 	
 	def blit(self):
-		pygame.draw.rect(window, red,(430,350,150,30))
 		self.calcul_heal = gaster.mhp/150
-		pygame.draw.rect(window, green,(430,350,gaster.hp/self.calcul_heal,30))
+		pygame.draw.rect(window, red,(410,380,150,30))
+		pygame.draw.rect(window, green,(410,380,gaster.hp/self.calcul_heal,30))
 		window.blit(self.affiche_choice1,(self.x,self.y))
 		
 
 fight_choice = Fight_choice()
 
+
+class Fight_barre:
+	
+	def __init__(self):
+		
+		self.x,self.y = 100,200
+		
+		self.image = fight_barre
+	
+	def update(self):
+		
+		self.rect = (self.x,self.y,self.image.get_width(),self.image.get_height())
+	
+
+fight_barre = Fight_barre()
 
 
 #main boucle
@@ -404,23 +451,29 @@ while continuer:
 			
 		if event.type == KEYDOWN:
 			if event.key == K_RIGHT:
-				if act_all_button == False:
-					if select_button < 4:
-						sound[1].play()
-						select_button += 1
+				if fight_chara == False or fight_gaster == False:
+					if act_all_button == False:
+						if select_button < 4:
+							sound[1].play()
+							select_button += 1
 			if event.key == K_LEFT:
-				if act_all_button == False:
-					if select_button > 1:
-						sound[1].play()
-						select_button -= 1
+				if fight_chara == False or fight_gaster == False:
+					if act_all_button == False:
+						if select_button > 1:
+							sound[1].play()
+							select_button -= 1
 			if event.key == K_UP:
-				if act_all_button:
-					if select_act > 1:
-						select_act -= 1
+				if fight_chara == False or fight_gaster == False:
+					if act_all_button:
+						if select_act > 1:
+							sound[1].play()
+							select_act -= 1
 			if event.key == K_DOWN:
-				if act_all_button:
-					if select_act < nb_act:
-						select_act += 1
+				if fight_chara == False or fight_gaster == False:
+					if act_all_button:
+						if select_act < max_nb_act:
+							sound[1].play()
+							select_act += 1
 			
 			
 			if event.key == K_ESCAPE:
@@ -428,16 +481,27 @@ while continuer:
 				sys.exit()
 			
 			if event.key == K_x:
-				act_all_button = False
-				act_button_act = False
-				act_button_fight = False
-				act_button_item = False
-				act_button_mercy = False
+				if fight_chara == False:
+					select_act = 1
+					act_all_button = False
+					act_button_act = False
+					act_button_fight = False
+					act_button_item = False
+					act_button_mercy = False
 			
 			if event.key == K_RETURN:
-				sound[0].play()
-				if act_all_button == False:
-					test_enter_key()
+				if fight_chara == False:
+					sound[0].play()
+					if act_button_fight:
+						if select_act == 1:
+							fight_choice.choice = "gaster"
+							fight_chara = True
+							act_button_fight = False
+					if act_all_button == False:
+						test_enter_key()
+				
+				elif fight_chara:
+					fight_bar.vx = 0
 				
 	
 	
@@ -453,15 +517,38 @@ while continuer:
 	button_mercy.update()
 	gaster.update()
 	chara_heart_menu.update()
+	fight_barre.update()
+	if fight_chara:
+		fight_bar.update()
 	
 	window.fill(white)
 	window.blit(background,(50,0))
 	window.blit(cadre.image,cadre.rect)
+	window.blit(cadre.bord,cadre.rect)
 	
 	if act_button_fight:
-		nb_act = 1
+		max_nb_act = 1
 		fight_choice.blit()
-		
+	if act_button_act:
+		max_nb_act = 2
+	if act_button_item:
+		max_nb_act = 2
+	if act_button_mercy:
+		max_nb_act = 1
+	
+	
+	if fight_chara:
+		window.blit(fight_barre.image,fight_barre.rect)
+		window.blit(fight_bar.image,fight_bar.rect)
+		if pygame.sprite.collide_mask(cadre,fight_bar) != None:
+			if fight_bar.retour == 0:
+				fight_bar.retour = 1
+				fight_bar.x -= 10
+				fight_bar.vx = -7
+			elif fight_bar.retour == 1:
+				fight_bar.vx = 0
+	
+	
 	#object
 	gaster.blit()
 	
@@ -475,7 +562,8 @@ while continuer:
 	window.blit(affiche2,(500,640))
 	pygame.draw.rect(window, red,(555,645,55,30))
 	
-	window.blit(chara_heart_menu.image,chara_heart_menu.rect)
+	if fight_chara == False:
+		window.blit(chara_heart_menu.image,chara_heart_menu.rect)
 	
 	if chara.hp/9 > 0:
 		pygame.draw.rect(window, yellow,(555,645,chara.hp/18,30))
